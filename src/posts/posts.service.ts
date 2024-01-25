@@ -3,6 +3,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Post } from './models/post.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class PostsService {
@@ -16,7 +17,16 @@ export class PostsService {
   }
 
   findAll(): Promise<Post[]> {
-    return this.postModel.findAll();
+    return this.postModel.findAll({
+      where: {
+        deletedAt: {
+          [Op.or]: {
+            [Op.eq]: null,
+            [Op.gt]: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+          },
+        },
+      },
+    });
   }
 
   findOne(id: number): Promise<Post> {
@@ -31,11 +41,14 @@ export class PostsService {
       updatePostDto,
       { where: { id }, returning: true },
     );
-    return [affectedCount, affectedRows] ;
+    return [affectedCount, affectedRows];
   }
 
   async remove(id: number): Promise<void> {
-    const post = await this.findOne(id);
-    await post.destroy();
+    const postToDelete = await this.findOne(id);
+    if (postToDelete) {
+      postToDelete.deletedAt = new Date();
+      await postToDelete.save();
+    }
   }
 }
