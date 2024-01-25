@@ -12,4 +12,5 @@ export class User extends Model {
 
   @Column
   email: string;
+
 }
