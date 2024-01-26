@@ -27,9 +27,8 @@ export class AuthService {
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
     });
-
     // Store the refresh token in redis
-    await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
+    // await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
 
     return {
       access_token: accessToken,
@@ -40,7 +39,7 @@ export class AuthService {
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
     if (user && (await user.validatePassword(password))) {
-      const { password, ...result } = user;
+      const { password, ...result } = user.dataValues;
       return result;
     }
     return null;
