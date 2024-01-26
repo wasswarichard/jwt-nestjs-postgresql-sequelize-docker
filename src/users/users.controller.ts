@@ -7,6 +7,7 @@ import {
   Delete,
   ValidationPipe,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -23,11 +24,17 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/status')
+  checkStatus(@Request() req): Promise<User[]> {
+    return req.user;
+  }
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {
     return this.usersService.findOne(+id);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -35,13 +42,9 @@ export class UsersController {
   ): Promise<[number, User[]]> {
     return this.usersService.update(+id, updateUserDto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(+id);
   }
-  // @Get('protected')
-  // getHello(@Request() req): string {
-  //   return req.user
-  // }
 }

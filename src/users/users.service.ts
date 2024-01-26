@@ -22,7 +22,7 @@ export class UsersService {
   }
 
   findAll(): Promise<User[]> {
-    return this.userModel.findAll();
+    return this.userModel.findAll({include: ['posts']});
   }
 
   findOne(id: number): Promise<User> {

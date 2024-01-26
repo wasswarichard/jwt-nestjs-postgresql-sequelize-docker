@@ -12,7 +12,7 @@ export class PostsService {
     private readonly postModel: typeof Post,
   ) {}
 
-  create(createPostDto: CreatePostDto): Promise<Post> {
+  create(createPostDto: CreatePostDto & { authorId: number }): Promise<Post> {
     return this.postModel.create({ ...createPostDto });
   }
 
@@ -35,7 +35,7 @@ export class PostsService {
 
   async update(
     id: number,
-    updatePostDto: UpdatePostDto,
+    updatePostDto: UpdatePostDto & { authorId: number },
   ): Promise<[number, Post[]]> {
     const [affectedCount, affectedRows] = await this.postModel.update(
       updatePostDto,
