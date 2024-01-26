@@ -1,9 +1,9 @@
 import { IsEnum, IsOptional, MaxLength } from 'class-validator';
 
 export const postStatus = {
-  PRIVATE: "private",
-  PUBLIC: 'public'
-}
+  PRIVATE: 'private',
+  PUBLIC: 'public',
+};
 
 export class CreatePostDto {
   @MaxLength(30)

@@ -10,7 +10,7 @@ import {
   Request,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
+  UploadedFiles,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
@@ -20,7 +20,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as UserPost } from './models/post.model';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 export class PostsController {
@@ -28,9 +28,9 @@ export class PostsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  create(
-    @UploadedFile(
+  @UseInterceptors(FilesInterceptor('files'))
+  async create(
+    @UploadedFiles(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 40000 }),
@@ -38,16 +38,14 @@ export class PostsController {
         ],
       }),
     )
-    file: Express.Multer.File,
+    files: Array<Express.Multer.File>,
     @Request() req,
     @Body(new ValidationPipe()) createPostDto: CreatePostDto,
   ): Promise<UserPost> {
-    // const filePath = this.postsService.fileUpload(
-    //   file.originalname,
-    //   file.buffer,
-    // );
+    const filePath = await this.postsService.fileUpload(files);
     return this.postsService.create({
       ...createPostDto,
+      files: filePath.toString(),
       authorId: req.user.id,
     });
   }

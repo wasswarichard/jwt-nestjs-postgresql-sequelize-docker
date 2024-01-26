@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {CreatePostDto, postStatus} from './dto/create-post.dto';
+import { CreatePostDto, postStatus } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Post } from './models/post.model';
@@ -18,27 +18,30 @@ export class PostsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async fileUpload(fileName: string, file: Buffer) {
-    return await this.s3Client.send(
-      new PutObjectCommand({
-        Bucket: 'file-upload-bucket',
-        Key: fileName,
-        Body: file,
-      }),
-    );
+  async fileUpload(files: Array<Express.Multer.File>): Promise<string[]> {
+    const urls: string[] = [];
+    for (const file of files) {
+      const { originalname, buffer } = file;
+      await this.s3Client.send(
+          new PutObjectCommand({
+            Bucket: 'treeofilebucket',
+            Key: originalname,
+            Body: buffer,
+          }),
+      );
+      urls.push(`https://treeofilebucket.s3.amazonaws.com/${originalname}`)
+    }
+   return urls;
   }
 
-  create(createPostDto: CreatePostDto & { authorId: number }): Promise<Post> {
+  create(createPostDto: CreatePostDto & { authorId: number, files: string }): Promise<Post> {
     return this.postModel.create({ ...createPostDto });
   }
 
   findAll(authorId: number): Promise<Post[]> {
     return this.postModel.findAll({
       where: {
-        [Op.or]: [
-          { authorId: authorId },
-          { status: postStatus.PUBLIC },
-        ],
+        [Op.or]: [{ authorId: authorId }, { status: postStatus.PUBLIC }],
         deletedAt: {
           [Op.or]: {
             [Op.eq]: null,
@@ -57,10 +60,10 @@ export class PostsService {
     id: number,
     updatePostDto: UpdatePostDto & { authorId: number },
   ): Promise<Post[]> {
-    const [_, affectedRows] = await this.postModel.update(
-      updatePostDto,
-      { where: { id }, returning: true },
-    );
+    const [_, affectedRows] = await this.postModel.update(updatePostDto, {
+      where: { id },
+      returning: true,
+    });
     return affectedRows;
   }
 
