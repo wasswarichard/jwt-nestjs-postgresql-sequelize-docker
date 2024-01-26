@@ -16,7 +16,6 @@ import { LocalStrategy } from './strategy/local.strategy';
     UsersModule,
     ConfigModule.forRoot(),
     SequelizeModule.forFeature([User]),
-    // PassportModule.register({ defaultStrategy: 'jwt' }),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',

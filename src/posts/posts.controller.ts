@@ -9,12 +9,18 @@ import {
   ValidationPipe,
   Request,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as UserPost } from './models/post.model';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 export class PostsController {
@@ -22,10 +28,24 @@ export class PostsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  @UseInterceptors(FileInterceptor('file'))
   create(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 40000 }),
+          new FileTypeValidator({ fileType: 'image/*' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
     @Request() req,
     @Body(new ValidationPipe()) createPostDto: CreatePostDto,
   ): Promise<UserPost> {
+    // const filePath = this.postsService.fileUpload(
+    //   file.originalname,
+    //   file.buffer,
+    // );
     return this.postsService.create({
       ...createPostDto,
       authorId: req.user.id,
@@ -33,8 +53,8 @@ export class PostsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get()
-  findAll(): Promise<UserPost[]> {
-    return this.postsService.findAll();
+  findAll(@Request() req): Promise<UserPost[]> {
+    return this.postsService.findAll(req.user.id);
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id')
@@ -47,7 +67,7 @@ export class PostsController {
     @Request() req,
     @Param('id') id: string,
     @Body(new ValidationPipe()) updatePostDto: UpdatePostDto,
-  ): Promise<[number, UserPost[]]> {
+  ): Promise<UserPost[]> {
     return this.postsService.update(+id, {
       ...updatePostDto,
       authorId: req.user.id,

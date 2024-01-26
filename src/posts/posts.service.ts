@@ -1,24 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
+import {CreatePostDto, postStatus} from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Post } from './models/post.model';
 import { Op } from 'sequelize';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PostsService {
+  private readonly s3Client = new S3Client({
+    region: this.configService.getOrThrow('AWS_S3_REGION'),
+  });
   constructor(
     @InjectModel(Post)
     private readonly postModel: typeof Post,
+    private readonly configService: ConfigService,
   ) {}
+
+  async fileUpload(fileName: string, file: Buffer) {
+    return await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: 'file-upload-bucket',
+        Key: fileName,
+        Body: file,
+      }),
+    );
+  }
 
   create(createPostDto: CreatePostDto & { authorId: number }): Promise<Post> {
     return this.postModel.create({ ...createPostDto });
   }
 
-  findAll(): Promise<Post[]> {
+  findAll(authorId: number): Promise<Post[]> {
     return this.postModel.findAll({
       where: {
+        [Op.or]: [
+          { authorId: authorId },
+          { status: postStatus.PUBLIC },
+        ],
         deletedAt: {
           [Op.or]: {
             [Op.eq]: null,
@@ -36,12 +56,12 @@ export class PostsService {
   async update(
     id: number,
     updatePostDto: UpdatePostDto & { authorId: number },
-  ): Promise<[number, Post[]]> {
-    const [affectedCount, affectedRows] = await this.postModel.update(
+  ): Promise<Post[]> {
+    const [_, affectedRows] = await this.postModel.update(
       updatePostDto,
       { where: { id }, returning: true },
     );
-    return [affectedCount, affectedRows];
+    return affectedRows;
   }
 
   async remove(id: number): Promise<void> {

@@ -1,11 +1,21 @@
 import { IsEnum, IsOptional, MaxLength } from 'class-validator';
 
+export const postStatus = {
+  PRIVATE: "private",
+  PUBLIC: 'public'
+}
+
 export class CreatePostDto {
-  @MaxLength(20)
+  @MaxLength(30)
   title: string;
+
   body: string;
+
   metadata: string;
+
+  tags: string[];
+
   @IsOptional()
-  @IsEnum(['public', 'private'], { message: 'use correct post tag ' })
-  tag: 'public' | 'private';
+  @IsEnum([postStatus.PUBLIC, postStatus.PRIVATE])
+  status: 'public' | 'private';
 }

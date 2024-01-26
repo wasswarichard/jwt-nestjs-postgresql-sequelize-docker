@@ -32,9 +32,7 @@ Build and run the Docker containers:
 The application exposes the following endpoints:
 
 - `POST /auth/register`: Register a new user.
-- `POST /auth/login`: Authenticate a user and return access and refresh tokens.
-- `POST /auth/refresh-token`: Refresh the access token using a valid refresh token.
-- `POST /auth/invalidate-token`: Invalidate a user's refresh token.
+- `POST /auth/login`: Authenticate a user and return access token.
 
 ## Environment Variables
 

@@ -16,14 +16,17 @@ export class Post extends Model {
   @Column
   body: string;
 
-  @Column
+  @Column(DataType.TEXT)
   metadata: string;
+
+  @Column(DataType.JSONB)
+  tags: Record<string, any>;
 
   @Column({
     type: DataType.ENUM('private', 'public'),
     defaultValue: 'public',
   })
-  tag: 'public' | 'private';
+  status: 'public' | 'private';
 
   @ForeignKey(() => User)
   @Column
