@@ -11,11 +11,14 @@ export class UsersService {
     @InjectModel(User)
     private readonly userModel: typeof User,
   ) {}
- async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const { password } = createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    return this.userModel.create({ ...createUserDto, password: hashedPassword});
+    return this.userModel.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
   }
 
   findAll(): Promise<User[]> {
@@ -23,11 +26,11 @@ export class UsersService {
   }
 
   findOne(id: number): Promise<User> {
-    return this.userModel.findOne({ where: { id } });
+    return this.userModel.findOne({ where: { id }, raw: true });
   }
 
   async findByUsername(username: string): Promise<User> {
-    return this.userModel.findOne({ where: { username }});
+    return this.userModel.findOne({ where: { username } });
   }
 
   async update(

@@ -9,29 +9,21 @@ import { User } from '../users/models/user.model';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { UsersService } from '../users/users.service';
-import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
 import { LocalStrategy } from './strategy/local.strategy';
-import { JwtRefreshTokenStrategy } from './strategy/jwt-refresh-token.strategy';
 
 @Module({
   imports: [
     UsersModule,
     ConfigModule.forRoot(),
     SequelizeModule.forFeature([User]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    // PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    UsersService,
-    RefreshTokenIdsStorage,
-    LocalStrategy,
-    JwtRefreshTokenStrategy,
-  ],
+  providers: [AuthService, JwtStrategy, UsersService, LocalStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

@@ -5,12 +5,13 @@ import {
   Patch,
   Param,
   Delete,
-  ValidationPipe, UseGuards,
+  ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './models/user.model';
-import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -39,4 +40,8 @@ export class UsersController {
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(+id);
   }
+  // @Get('protected')
+  // getHello(@Request() req): string {
+  //   return req.user
+  // }
 }
