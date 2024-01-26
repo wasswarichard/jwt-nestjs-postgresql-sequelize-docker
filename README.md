@@ -5,69 +5,42 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# NestJS Authentication Application with JWT
 
-## Description
+This is a NestJS application that provides a basic authentication system. The application exposes a few endpoints for user registration, login, token refresh, and token invalidation.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The application uses PostgreSQL for user data persistence, and Redis for storing refresh token data. JWT is used for authentication and token generation.
 
-## Installation
+## Prerequisites
 
-```bash
-$ npm install
-```
+Before you begin, ensure you have met the following requirements:
 
-## Running the app
+- You have installed the latest version of [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/).
 
-```bash
-# development
-$ npm run start
+## Running the Application
 
-# watch mode
-$ npm run start:dev
+### Docker
 
-# production mode
-$ npm run start:prod
-```
+To run the application, follow these steps:
 
-## Test
+Build and run the Docker containers:
+```docker-compose up --build -d```
 
-```bash
-# unit tests
-$ npm run test
 
-# e2e tests
-$ npm run test:e2e
+## API Endpoints
 
-# test coverage
-$ npm run test:cov
-```
+The application exposes the following endpoints:
 
-## Support
+- `POST /auth/register`: Register a new user.
+- `POST /auth/login`: Authenticate a user and return access and refresh tokens.
+- `POST /auth/refresh-token`: Refresh the access token using a valid refresh token.
+- `POST /auth/invalidate-token`: Invalidate a user's refresh token.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Environment Variables
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The application uses environment variables for configuration. These variables are defined in the `.env` file.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project uses the following license: [MIT License](<link>).
+

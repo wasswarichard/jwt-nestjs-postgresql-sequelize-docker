@@ -14,7 +14,6 @@ import { User } from './models/user.model';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
   @Get()
   findAll(): Promise<User[]> {
     return this.usersService.findAll();

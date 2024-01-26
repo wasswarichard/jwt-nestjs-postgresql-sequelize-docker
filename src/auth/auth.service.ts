@@ -1,95 +1,71 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { from, Observable, of } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
-import { User } from '../users/models/user.model';
-import { InjectModel } from '@nestjs/sequelize';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtRefreshTokenStrategy } from './strategy/jwt-refresh-token.strategy';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
+import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(JwtRefreshTokenStrategy.name);
   constructor(
-    @InjectModel(User)
-    private readonly userModel: typeof User,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
+    private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
   ) {}
-  hasPassword(password: string): Observable<string> {
-    return from(bcrypt.hash(password, 12));
+
+  async login(loginDto: LoginDto) {
+    const user = await this.validateUser(loginDto.username, loginDto.password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid username or password');
+    }
+
+    const payload = { sub: user.id, username: user.username };
+    const accessToken = await this.jwtService.signAsync(payload);
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1d',
+    });
+
+    // Store the refresh token in redis
+    await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 
-  doesUserExist(email: string): Observable<boolean> {
-    return from(this.userModel.findOne({ where: { email } })).pipe(
-      switchMap((user: User) => {
-        return of(!!user);
-      }),
-    );
-  }
-  registerAccount(user: CreateUserDto): Observable<User> {
-    const { password, email } = user;
-    return this.doesUserExist(email).pipe(
-      tap((doesUserExist: boolean) => {
-        if (doesUserExist)
-          throw new HttpException(
-            'A user has already been created with this email address',
-            HttpStatus.BAD_REQUEST,
-          );
-      }),
-      switchMap(() => {
-        return this.hasPassword(password).pipe(
-          switchMap((hashedPassword: string) => {
-            return from(
-              this.userModel.create({ ...user, password: hashedPassword }),
-            ).pipe(
-              map((user: User) => {
-                delete user.password;
-                return user;
-              }),
-            );
-          }),
-        );
-      }),
-    );
-  }
-  validateUser(email: string, password: string): Observable<User> {
-    return from(this.userModel.findOne({ where: { email } })).pipe(
-      switchMap((user: User) => {
-        if (!user) {
-          throw new HttpException(
-            { status: HttpStatus.FORBIDDEN, error: 'Invalid Credentials' },
-            HttpStatus.FORBIDDEN,
-          );
-        }
-        return from(bcrypt.compare(password, user.password)).pipe(
-          map((isValidPassword: boolean) => {
-            if (isValidPassword) {
-              delete user.password;
-              return user;
-            }
-          }),
-        );
-      }),
-    );
-  }
-  login(user: User): Observable<string> {
-    const { email, password } = user;
-    return this.validateUser(email, password).pipe(
-      switchMap((user: User) => {
-        if (user) {
-          return from(this.jwtService.signAsync({ user }));
-        }
-      }),
-    );
+  async validateUser(username: string, password: string): Promise<any> {
+    const user = await this.usersService.findByUsername(username);
+    if (user && (await user.validatePassword(password))) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
   }
 
-  getJwtUser(jwt: string): Observable<User | null> {
-    return from(this.jwtService.verifyAsync(jwt)).pipe(
-      map(({ user }: { user: User }) => {
-        return user;
-      }),
-      catchError(() => {
-        return of(null);
-      }),
-    );
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ access_token: string }> {
+    try {
+      const decoded = await this.jwtService.verifyAsync(refreshToken);
+      await this.refreshTokenIdsStorage.validate(decoded.sub, refreshToken);
+      const payload = { sub: decoded.sub, username: decoded.username };
+      const accessToken = await this.jwtService.signAsync(payload);
+      return { access_token: accessToken };
+    } catch (error) {
+      this.logger.error(`Error: ${error.message}`);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+  async invalidateToken(accessToken: string): Promise<void> {
+    try {
+      const decoded = await this.jwtService.verifyAsync(accessToken);
+      await this.refreshTokenIdsStorage.invalidate(decoded.sub);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid access token');
+    }
   }
 }
