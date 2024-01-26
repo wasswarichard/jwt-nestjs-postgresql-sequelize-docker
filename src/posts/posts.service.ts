@@ -20,16 +20,17 @@ export class PostsService {
 
   async fileUpload(files: Array<Express.Multer.File>): Promise<string[]> {
     const urls: string[] = [];
+    const config = this;
     for (const file of files) {
       const { originalname, buffer } = file;
       await this.s3Client.send(
           new PutObjectCommand({
-            Bucket: 'treeofilebucket',
+            Bucket: config.configService.get('S3_BUCKET'),
             Key: originalname,
             Body: buffer,
           }),
       );
-      urls.push(`https://treeofilebucket.s3.amazonaws.com/${originalname}`)
+      urls.push(`https://${this.configService.get('S3_BUCKET')}.s3.amazonaws.com/${originalname}`)
     }
    return urls;
   }
