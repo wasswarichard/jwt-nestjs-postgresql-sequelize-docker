@@ -6,6 +6,7 @@ import { Post } from './models/post.model';
 import { Op } from 'sequelize';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PostsService {
@@ -24,18 +25,24 @@ export class PostsService {
     for (const file of files) {
       const { originalname, buffer } = file;
       await this.s3Client.send(
-          new PutObjectCommand({
-            Bucket: config.configService.get('S3_BUCKET'),
-            Key: originalname,
-            Body: buffer,
-          }),
+        new PutObjectCommand({
+          Bucket: config.configService.get('S3_BUCKET'),
+          Key: originalname,
+          Body: buffer,
+        }),
       );
-      urls.push(`https://${this.configService.get('S3_BUCKET')}.s3.amazonaws.com/${originalname}`)
+      urls.push(
+        `https://${this.configService.get(
+          'S3_BUCKET',
+        )}.s3.amazonaws.com/${originalname}`,
+      );
     }
-   return urls;
+    return urls;
   }
 
-  create(createPostDto: CreatePostDto & { authorId: number, files: string }): Promise<Post> {
+  create(
+    createPostDto: CreatePostDto & { authorId: number; files: string },
+  ): Promise<Post> {
     return this.postModel.create({ ...createPostDto });
   }
 
@@ -73,6 +80,23 @@ export class PostsService {
     if (postToDelete) {
       postToDelete.deletedAt = new Date();
       await postToDelete.save();
+    }
+  }
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT, {
+    name: 'delete_messages',
+  })
+  async deleteMessages(): Promise<void> {
+    const posts = await this.postModel.findAll({
+      where: {
+        deletedAt: {
+          [Op.or]: {
+            [Op.eq]: null,
+          },
+        },
+      },
+    });
+    for (const post of posts) {
+      this.remove(post.id);
     }
   }
 }
