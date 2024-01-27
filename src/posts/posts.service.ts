@@ -82,6 +82,10 @@ export class PostsService {
       await postToDelete.save();
     }
   }
+
+  /**
+   * cron job to disappear messages after one month
+   */
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT, {
     name: 'delete_messages',
   })

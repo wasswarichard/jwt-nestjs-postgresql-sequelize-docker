@@ -33,6 +33,15 @@ The application exposes the following endpoints:
 
 - `POST /auth/register`: Register a new user.
 - `POST /auth/login`: Authenticate a user and return access token.
+- `POST /posts`: creates user post.
+- `GET /posts`: returns associated user private and public posts.
+- `GET /posts/:id`: returns a single post.
+- `PATCH /posts/:id`: updates a user post.
+- `DELETE /posts/:id`: removes a user post.
+- `GET /users`: returns registered users.
+- `GET /users/:id`: returns registered user by id.
+- `PATCH /users/:id`: updates user by id.
+- `DELETE /users/:id`: deletes user by id.
 
 ## Environment Variables
 
