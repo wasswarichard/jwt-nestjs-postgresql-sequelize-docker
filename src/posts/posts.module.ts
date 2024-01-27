@@ -2,11 +2,10 @@ import { Module } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Post } from './models/post.model';
-import { JwtStrategy } from '../auth/strategy/jwt.strategy';
+import { Files, Post } from './models/post.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Post])],
+  imports: [SequelizeModule.forFeature([Post, Files])],
   controllers: [PostsController],
   providers: [PostsService],
 })

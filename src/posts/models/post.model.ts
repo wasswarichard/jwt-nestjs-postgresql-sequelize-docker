@@ -1,9 +1,9 @@
 import {
-  BelongsTo,
   Column,
   DataType,
   Default,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
@@ -35,11 +35,20 @@ export class Post extends Model {
   @Default(null)
   @Column(DataType.DATE)
   deletedAt: Date | null;
+
+  @HasMany(() => Files)
+  files: Files[];
 }
 
-// / @BelongsTo(() => User)
-// // user: User;
-// //
-// @ForeignKey(() => User)
-// @Column
-// userId: number;
+@Table
+export class Files extends Model {
+  @Column
+  path: string;
+
+  @Column
+  name: string;
+
+  @ForeignKey(() => Post)
+  @Column
+  postId: number;
+}

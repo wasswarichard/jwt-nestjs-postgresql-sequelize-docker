@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePostDto, postStatus } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { Post } from './models/post.model';
+import { Files, Post } from './models/post.model';
 import { Op } from 'sequelize';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
@@ -16,11 +16,15 @@ export class PostsService {
   constructor(
     @InjectModel(Post)
     private readonly postModel: typeof Post,
+    @InjectModel(Files)
+    private readonly filesModel: typeof Files,
     private readonly configService: ConfigService,
   ) {}
 
-  async fileUpload(files: Array<Express.Multer.File>): Promise<string[]> {
-    const urls: string[] = [];
+  async fileUpload(
+    files: Array<Express.Multer.File>,
+  ): Promise<{ path: string; name: string }[]> {
+    const urls: { path: string; name: string }[] = [];
     const config = this;
     for (const file of files) {
       const { originalname, buffer } = file;
@@ -31,19 +35,32 @@ export class PostsService {
           Body: buffer,
         }),
       );
-      urls.push(
-        `https://${this.configService.get(
+      urls.push({
+        path: `https://${this.configService.get(
           'S3_BUCKET',
         )}.s3.amazonaws.com/${originalname}`,
-      );
+        name: originalname,
+      });
     }
     return urls;
   }
 
-  create(
-    createPostDto: CreatePostDto & { authorId: number; files: string },
+  async create(
+    createPostDto: CreatePostDto & {
+      authorId: number;
+      files: { path: string; name: string }[];
+    },
   ): Promise<Post> {
-    return this.postModel.create({ ...createPostDto });
+    const { files, ...rest } = createPostDto;
+    const post = await this.postModel.create({ ...rest });
+    for (const fileIndex in files) {
+      await this.filesModel.create({
+        path: files[fileIndex].path,
+        name: files[fileIndex].name,
+        postId: post.id,
+      });
+    }
+    return this.findOne(post.id);
   }
 
   findAll(authorId: number): Promise<Post[]> {
@@ -57,11 +74,12 @@ export class PostsService {
           },
         },
       },
+      include: ['files'],
     });
   }
 
   findOne(id: number): Promise<Post> {
-    return this.postModel.findOne({ where: { id } });
+    return this.postModel.findOne({ where: { id }, include: ['files'] });
   }
 
   async update(

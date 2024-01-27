@@ -23,17 +23,17 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
+@UseGuards(JwtAuthGuard)
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
   async create(
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 40000 }),
+          new MaxFileSizeValidator({ maxSize: 80000 }),
           new FileTypeValidator({ fileType: 'image/*' }),
         ],
       }),
@@ -42,24 +42,24 @@ export class PostsController {
     @Request() req,
     @Body(new ValidationPipe()) createPostDto: CreatePostDto,
   ): Promise<UserPost> {
-    const filePath = await this.postsService.fileUpload(files);
+    const uploadedFiles = await this.postsService.fileUpload(files);
     return this.postsService.create({
       ...createPostDto,
-      files: filePath.toString(),
+      files: uploadedFiles,
       authorId: req.user.id,
     });
   }
-  @UseGuards(JwtAuthGuard)
+
   @Get()
   findAll(@Request() req): Promise<UserPost[]> {
     return this.postsService.findAll(req.user.id);
   }
-  @UseGuards(JwtAuthGuard)
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<UserPost> {
     return this.postsService.findOne(+id);
   }
-  @UseGuards(JwtAuthGuard)
+
   @Patch(':id')
   update(
     @Request() req,
@@ -71,7 +71,7 @@ export class PostsController {
       authorId: req.user.id,
     });
   }
-  @UseGuards(JwtAuthGuard)
+
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.postsService.remove(+id);
