@@ -36,12 +36,12 @@ export class UsersService {
   async update(
     id: number,
     updateUserDto: UpdateUserDto,
-  ): Promise<[number, User[]]> {
-    const [affectedCount, affectedRows] = await this.userModel.update(
+  ): Promise<User[]> {
+    const [_, affectedRows] = await this.userModel.update(
       updateUserDto,
       { where: { id }, returning: true },
     );
-    return [affectedCount, affectedRows];
+    return affectedRows;
   }
 
   async remove(id: number): Promise<void> {

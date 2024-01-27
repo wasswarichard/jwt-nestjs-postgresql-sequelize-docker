@@ -24,7 +24,7 @@ Before you begin, ensure you have met the following requirements:
 To run the application, follow these steps:
 
 Build and run the Docker containers:
-```docker-compose up --build -d```
+```docker-compose up --build -d``` the api runs on `http://localhost:3000/`
 
 
 ## API Endpoints

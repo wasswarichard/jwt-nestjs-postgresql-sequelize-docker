@@ -38,7 +38,7 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDto,
-  ): Promise<[number, User[]]> {
+  ): Promise<User[]> {
     return this.usersService.update(+id, updateUserDto);
   }
 
