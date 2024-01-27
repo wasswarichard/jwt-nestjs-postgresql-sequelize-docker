@@ -45,7 +45,17 @@ The application exposes the following endpoints:
 
 ## Environment Variables
 
-The application uses environment variables for configuration. These variables are defined in the `.env` file.
+The application uses the following environment variables for configuration:
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_USER `
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DATABASE`
+- `JWT_SECRET`
+- `AWS_S3_REGION `
+- `AWS_ACCESS_KEY_ID `
+- `AWS_SECRET_ACCESS_KEY`
+- `S3_BUCKET`
 
 ## License
 
