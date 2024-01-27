@@ -88,15 +88,20 @@ export class PostsService {
   async deleteMessages(): Promise<void> {
     const posts = await this.postModel.findAll({
       where: {
-        deletedAt: {
+        createdAt: {
           [Op.or]: {
             [Op.eq]: null,
+            [Op.gt]: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000),
           },
         },
       },
     });
     for (const post of posts) {
-      this.remove(post.id);
+      const disappearingPost = await this.findOne(post.id);
+      if (disappearingPost) {
+        disappearingPost.deletedAt = new Date(disappearingPost.updatedAt);
+        await disappearingPost.save();
+      }
     }
   }
 }
