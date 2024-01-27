@@ -7,9 +7,9 @@
 
 # NestJS Authentication Application with JWT
 
-This is a NestJS application that provides a basic authentication system. The application exposes a few endpoints for user registration, login, token refresh, and token invalidation.
+This is a NestJS application that provides a basic authentication system. The application exposes a few endpoints for user registration, login, users and posts.
 
-The application uses PostgreSQL for user data persistence, and Redis for storing refresh token data. JWT is used for authentication and token generation.
+The application uses PostgreSQL for user data persistence. JWT is used for authentication and token generation.
 
 ## Prerequisites
 
