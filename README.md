@@ -46,7 +46,7 @@ The application exposes the following endpoints:
 ## Environment Variables
 
 The application uses the following environment variables for configuration:
-- `POSTGRES_HOST`
+- `POSTGRES_HOST=daily_express_postgres` the postgres database docker container.
 - `POSTGRES_PORT`
 - `POSTGRES_USER `
 - `POSTGRES_PASSWORD`
