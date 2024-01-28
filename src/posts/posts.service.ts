@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreatePostDto, postStatus } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { Files, Post } from './models/post.model';
+import { Post } from './models/post.model';
 import { Op } from 'sequelize';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Files } from './models/files.model';
 
 @Injectable()
 export class PostsService {
@@ -48,7 +49,7 @@ export class PostsService {
   async create(
     createPostDto: CreatePostDto & {
       authorId: number;
-      files: { path: string; name: string }[];
+      files?: { path: string; name: string }[];
     },
   ): Promise<Post> {
     const { files, ...rest } = createPostDto;

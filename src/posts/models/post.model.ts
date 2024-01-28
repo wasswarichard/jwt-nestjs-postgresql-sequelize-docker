@@ -8,6 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { User } from '../../users/models/user.model';
+import { Files } from './files.model';
 @Table
 export class Post extends Model {
   @Column
@@ -37,17 +38,4 @@ export class Post extends Model {
 
   @HasMany(() => Files)
   files: Files[];
-}
-
-@Table
-export class Files extends Model {
-  @Column
-  path: string;
-
-  @Column
-  name: string;
-
-  @ForeignKey(() => Post)
-  @Column
-  postId: number;
 }

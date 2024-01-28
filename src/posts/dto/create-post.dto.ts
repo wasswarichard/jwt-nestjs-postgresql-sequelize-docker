@@ -8,15 +8,12 @@ export const postStatus = {
 export class CreatePostDto {
   @MaxLength(30)
   title: string;
-
   body: string;
-
   @IsEnum(['TECHNOLOGY', 'INNOVATION', 'HEALTHCARE', 'AI'], {
     message: 'use correct tag - TECHNOLOGY, INNOVATION, HEALTHCARE, AI',
   })
   tags: string;
-
   @IsOptional()
   @IsEnum([postStatus.PUBLIC, postStatus.PRIVATE])
-  status: 'public' | 'private';
+  status?: 'public' | 'private';
 }

@@ -14,6 +14,8 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -30,17 +32,16 @@ export class PostsController {
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
   async create(
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 80000 }),
-          new FileTypeValidator({ fileType: 'image/*' }),
-        ],
-      }),
-    )
-    files: Array<Express.Multer.File>,
     @Request() req,
     @Body(new ValidationPipe()) createPostDto: CreatePostDto,
+    @UploadedFiles()
+    files?: // new ParseFilePipe({
+    //   validators: [
+    //     new MaxFileSizeValidator({ maxSize: 80000 }),
+    //     new FileTypeValidator({ fileType: 'image/*' }),
+    //   ],
+    // }),
+    Array<Express.Multer.File>,
   ): Promise<UserPost> {
     const uploadedFiles = await this.postsService.fileUpload(files);
     return this.postsService.create({

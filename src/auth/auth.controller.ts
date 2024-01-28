@@ -23,7 +23,6 @@ export class AuthController {
     return this.usersService.create(createUserDto);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Body(new ValidationPipe()) loginDto: LoginDto) {
     return this.authService.login(loginDto);
