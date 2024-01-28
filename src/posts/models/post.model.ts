@@ -16,11 +16,10 @@ export class Post extends Model {
   @Column
   body: string;
 
-  @Column(DataType.TEXT)
-  metadata: string;
-
-  @Column(DataType.JSONB)
-  tags: Record<string, any>;
+  @Column({
+    type: DataType.ENUM('TECHNOLOGY', 'INNOVATION', 'HEALTHCARE', 'AI'),
+  })
+  tags: string;
 
   @Column({
     type: DataType.ENUM('private', 'public'),

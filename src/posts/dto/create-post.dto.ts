@@ -11,9 +11,10 @@ export class CreatePostDto {
 
   body: string;
 
-  metadata: string;
-
-  tags: string[];
+  @IsEnum(['TECHNOLOGY', 'INNOVATION', 'HEALTHCARE', 'AI'], {
+    message: 'use correct tag - TECHNOLOGY, INNOVATION, HEALTHCARE, AI',
+  })
+  tags: string;
 
   @IsOptional()
   @IsEnum([postStatus.PUBLIC, postStatus.PRIVATE])

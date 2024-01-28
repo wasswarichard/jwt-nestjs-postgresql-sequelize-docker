@@ -33,14 +33,11 @@ export class UsersService {
     return this.userModel.findOne({ where: { username } });
   }
 
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<User[]> {
-    const [_, affectedRows] = await this.userModel.update(
-      updateUserDto,
-      { where: { id }, returning: true },
-    );
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User[]> {
+    const [_, affectedRows] = await this.userModel.update(updateUserDto, {
+      where: { id },
+      returning: true,
+    });
     return affectedRows;
   }
 
